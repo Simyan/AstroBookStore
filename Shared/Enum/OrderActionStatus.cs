@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Purchase
+namespace Shared.Enum
 {
-    internal class Purchase
+    public enum OrderActionStatus
     {
+        Pending = 1,
+        Finished = 2
     }
 }

@@ -13,7 +13,8 @@ namespace Core.Customer
         
         bool IsValidEmail(string email)
         {
-            //NOTE: Code from user CogWheel on SO: https://stackoverflow.com/questions/1365407/c-sharp-code-to-validate-email-address
+            //NOTE: Code from user CogWheel on SO:
+            //https://stackoverflow.com/questions/1365407/c-sharp-code-to-validate-email-address
             var trimmedEmail = email.Trim();
 
             if (trimmedEmail.EndsWith("."))
@@ -36,7 +37,7 @@ namespace Core.Customer
         public Email(string emailId)
         {
             if (!IsValidEmail(emailId))
-                new ArgumentException();
+                throw new ArgumentException();
 
             this.emailId = emailId;
         }

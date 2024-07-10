@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 namespace Core.Customer
 {
-    public class CustomerAddress : IValueObject
+    public class Address : IValueObject
     {
         public string Street { get; private set; }
         public string BuildingName { get; private set; }
@@ -19,9 +19,9 @@ namespace Core.Customer
         public string City { get; private set; }
         public string ZipCode { get; private set; }
 
-        private CustomerAddress() { }
+        private Address() { }
 
-        public CustomerAddress(AddressDto dto)
+        public Address(AddressDto dto)
         {
             
 
