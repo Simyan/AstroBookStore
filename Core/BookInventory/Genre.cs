@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Core.BookInventory
 {
-    public class Category : IValueObject
+    public class Genre : IValueObject
     {  
         public string Name { get; private set; }
 
-        private Category() { }
+        private Genre() { }
 
-        public Category(string name)
+        public Genre(string name)
         {
             Name = name;
         }

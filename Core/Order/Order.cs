@@ -14,9 +14,9 @@ namespace Core.Order
     
 
 
-    public class Order : IEntity, IAggregateRoot
+    public class Order : DomainEntity, IAggregateRoot
     {
-        public Guid Id { get; private set; }
+        
         public Guid CustomerId { get; private set; }
 
         public IEnumerable<OrderItem> OrderItems { get; private set; }
