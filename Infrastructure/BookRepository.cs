@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    public class BookRepository : IRepository<Book>
+    public class BookRepository : IBookRepository
     {
         private readonly AstroDBContext _context;
         public IUnitOfWork UnitOfWork => _context;

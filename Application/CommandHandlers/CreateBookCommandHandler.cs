@@ -12,9 +12,9 @@ namespace Application.CommandHandlers
 {
     public class CreateBookCommandHandler : IRequestHandler<CreateBookCommand, bool>
     {
-        IRepository<Book> _bookRepository;
+        IBookRepository _bookRepository;
         
-        public CreateBookCommandHandler(IRepository<Book> BookRepository) 
+        public CreateBookCommandHandler(IBookRepository BookRepository) 
         {
             _bookRepository = BookRepository;
         }
@@ -26,7 +26,8 @@ namespace Application.CommandHandlers
                request.Price,
                request.Stock,
                request.Authors,
-               request.Categories);
+               request.Categories,
+               request.ReleaseDate);
 
             _bookRepository.Add(book);
             

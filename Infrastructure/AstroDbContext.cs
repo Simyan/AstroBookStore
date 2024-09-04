@@ -24,31 +24,33 @@ namespace Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
            
-            modelBuilder.Entity<Book>().HasKey(e => e.UId);
-            
-            modelBuilder.Entity<Book>()
-                .Property(e => e.UId)
-                .UseIdentityColumn();
+                modelBuilder.Entity<Book>()
+                    .ToTable("Book")
+                    .HasKey(e => e.UId);
 
-            modelBuilder.Entity<Book>()
-                .OwnsOne(
-                p => p.Authors, 
-                o => o.ToJson()
-                );
+                modelBuilder.Entity<Book>()
+                    .Property(e => e.UId)
+                    .UseIdentityColumn();
 
-            modelBuilder.Entity<Book>()
-                .OwnsOne(
-                p => p.Genres,
-                o => o.ToJson()
-                );
+                modelBuilder.Entity<Book>()
+                    .OwnsMany(
+                    p => p.Authors,
+                    o => o.ToJson()
+                    );
 
-            //modelBuilder.Entity<Book>()
-            //    .Property(e => e.Data)
-            //    .HasColumnType("json");
+                modelBuilder.Entity<Book>()
+                    .OwnsMany(
+                    p => p.Genres,
+                    o => o.ToJson()
+                    );
+
+                //modelBuilder.Entity<Book>()
+                //    .Property(e => e.Data)
+                //    .HasColumnType("json");
 
 
 
-            base.OnModelCreating(modelBuilder);
+                base.OnModelCreating(modelBuilder);  
         }
 
         public async Task<bool> SaveEntitiesAsync()

@@ -22,10 +22,13 @@ namespace Core.BookInventory
         public DateTime ReleaseDate { get; private set; }
         public decimal Price { get; private set; }
         public int Stock { get; private set; }
-        public IEnumerable<Author> Authors { get; private set; }
-        public IEnumerable<Genre> Genres { get; private set;  }
+        public List<Author> Authors { get; private set; }
+        public List<Genre> Genres { get; private set;  }
 
-        public Book(string title, string description, decimal price, int stock, IEnumerable<string> authors, IEnumerable<string> genres)
+        //EF Core needs a constructor without the owned entities.
+        private Book(){}
+
+        public Book(string title, string description, decimal price, int stock, IEnumerable<string> authors, IEnumerable<string> genres, DateTime releaseDate)
         {
             ArgumentNullException.ThrowIfNullOrEmpty(title);
             ArgumentNullException.ThrowIfNull(authors);
@@ -33,12 +36,15 @@ namespace Core.BookInventory
 
             if (price <= 0) new ArgumentException();
             if (stock < 0) new ArgumentException();
-            
-            Id = new Guid();
+
+            Id = Guid.NewGuid();
             Title = title;
             Description = description ?? string.Empty;
-            Authors = authors.Select(name => new Author(name, new Guid()));
-            Genres = genres.Select(x => new Genre(x));
+            Authors = authors.Select(name => new Author(name, Guid.NewGuid())).ToList();
+            Genres = genres.Select(x => new Genre(x)).ToList();
+            Price = price;
+            Stock = stock;
+            ReleaseDate = releaseDate;
 
             this.AddDomainEvent(new BookCreationRequested());
         }

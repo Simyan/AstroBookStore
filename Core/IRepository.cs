@@ -11,7 +11,6 @@ namespace Core
         IUnitOfWork UnitOfWork { get; }
         T Add(T entity);
         T Update(T entity);
-
         Task<T?> FindByIdAsync(Guid Id);
     }
 }
