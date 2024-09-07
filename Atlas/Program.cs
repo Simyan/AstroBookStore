@@ -3,9 +3,11 @@ using Application.CommandHandlers;
 using Core;
 using Core.BookInventory;
 using Infrastructure;
+using Marten;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
+using Weasel.Core;
 
 namespace Atlas
 {
@@ -24,9 +26,24 @@ namespace Atlas
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IBookRepository, BookRepository>();
             builder.Services.AddMediatR(c => c.RegisterServicesFromAssemblies(
-                [typeof(CreateBookCommandHandler).Assembly]));
+                [
+                    typeof(CreateBookCommandHandler).Assembly,
+                    typeof(StartOrderCommandHandler).Assembly,
+                    typeof(CompleteOrderCommandHandler).Assembly,
+                 ]));
             builder.Services.AddDbContext<AstroDBContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AstroDbConnectionString")));
 
+
+            builder.Services.AddMarten(options =>
+            {
+                options.Connection(builder.Configuration.GetConnectionString("AstroDbConnectionString") 
+                                                                    ?? throw new ArgumentNullException());
+                options.UseSystemTextJsonForSerialization();
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.AutoCreateSchemaObjects = AutoCreate.CreateOnly;
+                }
+            });
             
 
             var app = builder.Build();

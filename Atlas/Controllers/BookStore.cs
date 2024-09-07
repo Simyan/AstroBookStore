@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 using MediatR;
+using Shared.DTO;
 
 namespace Atlas.Controllers
 {
@@ -37,6 +38,19 @@ namespace Atlas.Controllers
         public Task CreateBook(CreateBookCommand createBookCommand) 
         {
             return _mediator.Send(createBookCommand);
+        }
+
+        [HttpPost("MockStartOrder")]
+        public Task MockStartOrder(InitiateOrderDto initiateOrderDto)
+        {
+            StartOrderCommand startOrderCommand = new StartOrderCommand(initiateOrderDto);
+            return _mediator.Send(startOrderCommand);
+        }
+
+        [HttpPost("MockCompleteOrder")]
+        public Task MockCompleteOrder(CompleteOrderCommand completeOrderCommand)
+        {
+            return _mediator.Send(completeOrderCommand);
         }
     }
 }

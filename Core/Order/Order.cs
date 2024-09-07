@@ -11,12 +11,15 @@ using System.Threading.Tasks;
 
 namespace Core.Order
 {
-    
+
+    public sealed record OrderStarted(Guid OrderId, InitiateOrderDto InitiateOrderDto, OrderAction orderAction);
+    public sealed record OrderCompleted(Guid OrderId, OrderStatus OrderStatus);
 
 
-    public class Order : DomainEntity, IAggregateRoot
+    public class Order : IAggregateRoot
     {
-        
+        public Guid Id { get; set; }
+
         public Guid CustomerId { get; private set; }
 
         public IEnumerable<OrderItem> OrderItems { get; private set; }
@@ -45,43 +48,82 @@ namespace Core.Order
             OrderStages = new List<OrderStage>() { orderStage };
         }
 
+        //[InititateOrder]
+        //#Decide:
+        //Called by : InititateOrder CH
+        //Check if paymentRefNo already exists, ignore if it does
+        //Validate fields according to requirement
+        //Raise orderStarted event
 
+        //#Create -> orderStarted : create new order object
 
-        public Order InitiateOrder(InitiateOrderDto dto)
+        //[OrderCompleted]
+        //#Decide:
+        //Called by : CompleteOrder CH
+        //Load order aggregate from ES 
+        //Check if it is in valid stage to be completed
+        //Raise orderCompleted event
+
+        //#Apply -> orderCompleted : Update order state accordingly
+
+        #region Evolve Methods
+
+        public static Order Create(OrderStarted started)
+            => new Order(started.OrderId, started.InitiateOrderDto, new OrderStage(started.orderAction));
+
+        public static Order Apply(OrderCompleted completed, Order order)
+        {
+            order.OrderStatus = OrderStatus.Completed;
+            CurrentStageClosed(order);
+            return order;
+        }
+        #endregion
+
+        #region Decider Methods
+        public static OrderStarted InitiateOrder(InitiateOrderDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto.OrderItems, nameof(dto.OrderItems));
             ArgumentOutOfRangeException.ThrowIfLessThan(dto.OrderItems.Count(), 1);
             dto.OrderItems.ToList()
                 .ForEach(t => ArgumentOutOfRangeException.ThrowIfLessThan<uint>(t.Quantity, 1));
 
-            var processOrderStage = new OrderStage(OrderAction.Process);
-            return new Order(new Guid(), dto, processOrderStage);
+            return new OrderStarted(Guid.NewGuid(), dto, OrderAction.Process);
         }
 
-        public void CompleteOrder() 
-        {
-            this.OrderStatus = OrderStatus.Completed;
-            CurrentStageClosed();
-        }
+        public OrderCompleted CompleteOrder(Guid orderId) => new OrderCompleted(orderId, OrderStatus.Completed);
 
-        public void CancelOrder()
-        {
-            CurrentStageClosed();
-            OrderStage stage = new(OrderAction.Cancel);
-            this.OrderStages.Append(stage);
-        }
+        #endregion
 
-       
-        public void ReturnOrder()
-        {
-            CurrentStageClosed();
-            OrderStage stage = new(OrderAction.Return);
-            this.OrderStages.Append(stage);
-        }
+        #region Deprecated code 
+        //Leaving them here for now for reference, will be removed soon
 
-        public void CurrentStageClosed()
+        //public void CompleteOrder2() 
+        //{
+        //    this.OrderStatus = OrderStatus.Completed;
+        //    CurrentStageClosed();
+        //}
+
+        //public void CancelOrder()
+        //{
+        //    CurrentStageClosed();
+        //    OrderStage stage = new(OrderAction.Cancel);
+        //    this.OrderStages.Append(stage);
+        //}
+
+
+        //public void ReturnOrder()
+        //{
+        //    CurrentStageClosed();
+        //    OrderStage stage = new(OrderAction.Return);
+        //    this.OrderStages.Append(stage);
+        //}
+        #endregion
+
+
+
+        public static void CurrentStageClosed(Order order)
         {
-            var stage = this.OrderStages.Where(w => w.EndDate == null).Single();
+            var stage = order.OrderStages.Where(w => w.EndDate == null).Single();
             stage.OrderCompleted();
         }
     }
