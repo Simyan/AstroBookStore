@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using Weasel.Core;
 
-namespace Atlas
+namespace Astro
 {
     public class Program
     {

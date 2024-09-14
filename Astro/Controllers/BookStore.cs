@@ -1,6 +1,6 @@
 ﻿using Application.Commands;
-using Atlas.DataStore.Mocks;
-using Atlas.Models;
+using Astro.DataStore.Mocks;
+using Astro.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using MediatR;
 using Shared.DTO;
 
-namespace Atlas.Controllers
+namespace Astro.Controllers
 {
     //[Route("api/[controller]")]
     [Route("api")]

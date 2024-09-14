@@ -1,4 +1,4 @@
-﻿namespace Atlas.Models
+﻿namespace Astro.Models
 {
     public class Book
     {

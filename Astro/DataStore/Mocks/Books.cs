@@ -1,6 +1,6 @@
-﻿using Atlas.Models;
+﻿using Astro.Models;
 
-namespace Atlas.DataStore.Mocks
+namespace Astro.DataStore.Mocks
 {
     public class Books
     {
