@@ -3,6 +3,7 @@ using Shared.DTO;
 using Shared.Enum;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace Core.Order
 
     public sealed record OrderStarted(Guid OrderId, InitiateOrderDto InitiateOrderDto, OrderAction orderAction);
     public sealed record OrderCompleted(Guid OrderId, OrderStatus OrderStatus);
+    public sealed record OrderCancelled(Guid OrderId, OrderStatus OrderStatus);
+    public sealed record OrderReturned(Guid OrderId, OrderStatus OrderStatus);
 
 
     public class Order : IAggregateRoot
@@ -71,12 +74,28 @@ namespace Core.Order
         public static Order Create(OrderStarted started)
             => new Order(started.OrderId, started.InitiateOrderDto, new OrderStage(started.orderAction));
 
-        public static Order Apply(OrderCompleted completed, Order order)
+        public static void Apply(OrderCompleted completed, Order order)
         {
-            order.OrderStatus = OrderStatus.Completed;
+            order.OrderStatus = completed.OrderStatus;
             CurrentStageClosed(order);
-            return order;
+
+            //order.OrderStatus = OrderStatus.Completed;
+            //CurrentStageClosed(order);
+            //return order;
         }
+
+        public static void Apply(OrderCancelled cancelled, Order order)
+        {
+            order.OrderStatus = cancelled.OrderStatus;
+            CurrentStageClosed(order);
+        }
+
+        public static void Apply(OrderReturned returned, Order order)
+        {
+            order.OrderStatus = returned.OrderStatus;
+            CurrentStageClosed(order);
+        }
+
         #endregion
 
         #region Decider Methods
@@ -90,37 +109,13 @@ namespace Core.Order
             return new OrderStarted(Guid.NewGuid(), dto, OrderAction.Process);
         }
 
-        public OrderCompleted CompleteOrder(Guid orderId) => new OrderCompleted(orderId, OrderStatus.Completed);
+        public static OrderCompleted CompleteOrder(Guid orderId) => new OrderCompleted(orderId, OrderStatus.Completed);
+        public static OrderCancelled CancelOrder(Guid orderId) => new OrderCancelled(orderId, OrderStatus.Cancelled);
+        public static OrderReturned ReturnOrder(Guid orderId) => new OrderReturned(orderId, OrderStatus.Returned);
 
         #endregion
 
-        #region Deprecated code 
-        //Leaving them here for now for reference, will be removed soon
-
-        //public void CompleteOrder2() 
-        //{
-        //    this.OrderStatus = OrderStatus.Completed;
-        //    CurrentStageClosed();
-        //}
-
-        //public void CancelOrder()
-        //{
-        //    CurrentStageClosed();
-        //    OrderStage stage = new(OrderAction.Cancel);
-        //    this.OrderStages.Append(stage);
-        //}
-
-
-        //public void ReturnOrder()
-        //{
-        //    CurrentStageClosed();
-        //    OrderStage stage = new(OrderAction.Return);
-        //    this.OrderStages.Append(stage);
-        //}
-        #endregion
-
-
-
+       
         public static void CurrentStageClosed(Order order)
         {
             var stage = order.OrderStages.Where(w => w.EndDate == null).Single();

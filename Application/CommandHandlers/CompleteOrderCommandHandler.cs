@@ -17,14 +17,21 @@ namespace Application.CommandHandlers
 
         public async Task<bool> Handle(CompleteOrderCommand request, CancellationToken cancellationToken)
         {
+            
             using var session = _eventStore.LightweightSession();
 
-            var order = await session.Events.AggregateStreamAsync<Order>(request.OrderId) 
+            var stream = await session.Events.FetchForWriting<Order>(request.OrderId)
                 ?? throw new NullReferenceException();
+            var order = stream.Aggregate;
 
-            var orderCompletedEvent = order.CompleteOrder(request.OrderId);
+            //var order = await session.Events.AggregateStreamAsync<Order>(request.OrderId)
+            //    ?? throw new NullReferenceException();
 
-            session.Events.Append(request.OrderId, orderCompletedEvent);
+            var orderCompletedEvent = Order.CompleteOrder(request.OrderId);
+
+            stream.AppendOne(orderCompletedEvent);
+
+            //session.Events.Append(request.OrderId, orderCompletedEvent);
 
             await session.SaveChangesAsync();
 

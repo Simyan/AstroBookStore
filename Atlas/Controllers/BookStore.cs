@@ -47,8 +47,8 @@ namespace Atlas.Controllers
             return _mediator.Send(startOrderCommand);
         }
 
-        [HttpPost("MockCompleteOrder")]
-        public Task MockCompleteOrder(CompleteOrderCommand completeOrderCommand)
+        [HttpPost("CompleteOrder")]
+        public Task CompleteOrder(CompleteOrderCommand completeOrderCommand)
         {
             return _mediator.Send(completeOrderCommand);
         }
