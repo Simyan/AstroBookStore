@@ -73,24 +73,19 @@ namespace Core.Order
 
         public static Order Create(OrderStarted started)
             => new Order(started.OrderId, started.InitiateOrderDto, new OrderStage(started.orderAction));
-
-        public static void Apply(OrderCompleted completed, Order order)
+        private void Apply(OrderCompleted completed, Order order)
         {
             order.OrderStatus = completed.OrderStatus;
             CurrentStageClosed(order);
-
-            //order.OrderStatus = OrderStatus.Completed;
-            //CurrentStageClosed(order);
-            //return order;
         }
 
-        public static void Apply(OrderCancelled cancelled, Order order)
+        private void Apply(OrderCancelled cancelled, Order order)
         {
             order.OrderStatus = cancelled.OrderStatus;
             CurrentStageClosed(order);
         }
 
-        public static void Apply(OrderReturned returned, Order order)
+        private void Apply(OrderReturned returned, Order order)
         {
             order.OrderStatus = returned.OrderStatus;
             CurrentStageClosed(order);
