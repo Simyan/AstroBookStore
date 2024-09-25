@@ -52,5 +52,11 @@ namespace Astro.Controllers
         {
             return _mediator.Send(completeOrderCommand);
         }
+
+        [HttpPost("CancelOrder")]
+        public Task CancelOrder(CancelOrderCommand cancelOrderCommand)
+        {
+            return _mediator.Send(cancelOrderCommand);
+        }
     }
 }
