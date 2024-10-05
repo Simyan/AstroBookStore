@@ -37,9 +37,11 @@ builder.Services.AddMarten(options =>
                                                         ?? throw new ArgumentNullException());
     options.UseSystemTextJsonForSerialization();
     options.Projections.Add<OrderSummaryProjection>(Marten.Events.Projections.ProjectionLifecycle.Async);
+    options.Projections.Add<OrderActivityProjection>(Marten.Events.Projections.ProjectionLifecycle.Inline);
     if (builder.Environment.IsDevelopment())
     {
         options.AutoCreateSchemaObjects = AutoCreate.All;
+        
     }
 })
 .AddAsyncDaemon(Marten.Events.Daemon.Resiliency.DaemonMode.Solo);
@@ -62,10 +64,17 @@ app.UseAuthorization();
 app.MapControllers();
 
 
+try
+{
+    //app.Run();
+    return await app.RunOaktonCommands(args);
+}
+catch (Exception)
+{
+    throw;
+}
 
-//app.Run();
-return await app.RunOaktonCommands(args);
-
+ 
 //namespace Astro
 //{
 //    public class Program

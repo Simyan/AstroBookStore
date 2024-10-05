@@ -14,13 +14,15 @@ namespace Core.Order
 {
     public class OrderSummary
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public int OrdersFulfilledCount { get; set; }
         public int OrdersCancelledCount { get; set; }
         public int OrdersReturnedCount { get; set; }
+        
+        //public DateOnly OrderSummaryDate {  get; set; }
     }
 
-    public class OrderSummaryProjection : MultiStreamProjection<OrderSummary, Guid>
+    public class OrderSummaryProjection : MultiStreamProjection<OrderSummary, string>
     {
         public OrderSummaryProjection()
         {
@@ -33,8 +35,11 @@ namespace Core.Order
 
 
 
-        public void Apply(OrderCompleted orderCompletedEvent, OrderSummary view)
-            => view.OrdersFulfilledCount++;
+        public void Apply(IEvent<OrderCompleted> orderCompletedEvent, OrderSummary view)
+        {
+            
+            view.OrdersFulfilledCount++;
+        }
 
         public void Apply(OrderCancelled orderCancelledEvent, OrderSummary view)
             => view.OrdersCancelledCount++;
@@ -44,7 +49,7 @@ namespace Core.Order
 
     }
 
-    public class OrderSummayGrouper : IAggregateGrouper<Guid>
+    public class OrderSummayGrouper : IAggregateGrouper<string>
     {
 
         private readonly Type[] eventTypes =
@@ -53,13 +58,9 @@ namespace Core.Order
             typeof(OrderCancelled),
             typeof(OrderReturned)
         ];
-        public async Task Group(IQuerySession session, IEnumerable<IEvent> events, ITenantSliceGroup<Guid> grouping)
+
+        public async Task Group(IQuerySession session, IEnumerable<IEvent> events, ITenantSliceGroup<string> grouping)
         {
-            //var filteredEvents = events
-            //    .OfType<IEvent<OrderCompleted>>()
-            //    .OfType<IEvent<OrderCancelled>>()
-            //    .OfType<IEvent<OrderReturned>>()
-            //    .ToList();
 
             var filteredEvents = events
                 .Where(ev => eventTypes.Contains(ev.EventType))
@@ -67,22 +68,30 @@ namespace Core.Order
 
             if (!filteredEvents.Any())
             {
-                return; 
+                return;
             }
 
             var orderIds = filteredEvents.Select(e => e.StreamId).ToList();
 
-            var y = await session.Events.QueryRawEventDataOnly<OrderStarted>()
-                .Where(e => orderIds.Contains(e.OrderId))
-                .Select(s => new { Id = s.OrderId })
-                .ToListAsync();
+            // filter events that we want
+            //var filteredPastEvents = await session.Events.QueryAllRawEvents()
+            //    .Where(e => e.EventTypesAre(eventTypes))
+            //    .ToListAsync();
 
-            grouping.AddEvents(Guid.NewGuid(), filteredEvents);
-            //foreach(var group in y.Select(g =>
-            //    new { g.Id, Events = filteredEvents.Where(ev => ev.StreamId == g.Id) }))
-            //{
-            //    grouping.AddEvents(Guid.NewGuid(), group.Events);
-            //}
+            //var filteredEventsUnion = filteredEvents.Union(filteredPastEvents);
+
+            var distinctDates = filteredEvents
+                .DistinctBy(e => e.Timestamp.Date)
+                .ToList();
+
+            foreach (var x in distinctDates.Select(
+                    g => new {
+                        Id = DateOnly.FromDateTime(g.Timestamp.Date).ToString(),
+                        Events = filteredEvents.Where(ev => ev.Timestamp.Date == g.Timestamp.Date)
+                    }))
+            {
+                grouping.AddEvents(x.Id, x.Events);
+            }
         }
     }
 }
